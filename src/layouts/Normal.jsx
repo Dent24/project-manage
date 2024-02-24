@@ -55,8 +55,8 @@ const Default = () => {
 
   return (
     <>
-      <Layout>
-        <Sider trigger={null} collapsible collapsed={collapsed} style={{position:'relative'}}>
+      <Layout style={{marginLeft:collapsed?'80px':'200px'}}>
+        <Sider trigger={null} collapsible collapsed={collapsed} className={`${normalCss.sideBar} ${collapsed ? '' : normalCss.collapsed}`}>
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}

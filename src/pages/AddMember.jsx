@@ -1,6 +1,6 @@
 const AddMember = () => {
   return (
-    <div>
+    <div style={{height:'1800px'}}>
       新增使用者
     </div>
   )

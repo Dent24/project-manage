@@ -9,6 +9,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AddMember from './pages/AddMember';
+import List from './pages/List';
 
 import './index.css'
 
@@ -20,6 +21,11 @@ const Router = () => useRoutes([
         path: '/',
         element: <Home />,
         name: 'home'
+      },
+      {
+        path: '/list',
+        element: <List />,
+        name: 'list'
       },
       {
         path: '/addMember',

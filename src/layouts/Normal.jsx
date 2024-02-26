@@ -7,6 +7,7 @@ import {
   MenuUnfoldOutlined,
   HomeOutlined,
   LogoutOutlined,
+  UnorderedListOutlined,
 } from '@ant-design/icons';
 
 import normalCss from '../assets/scss/normal.module.scss'
@@ -24,6 +25,7 @@ const getItem = (label, key, icon, children) => {
 
 const items = [
   getItem('首頁', '/', <HomeOutlined />),
+  getItem('專案清單', '/list', <UnorderedListOutlined />),
   getItem('新增成員', '/addMember', <UserAddOutlined />),
 ];
 

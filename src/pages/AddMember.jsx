@@ -42,7 +42,7 @@ const AddMember = () => {
         setHelp('已有此用戶');
         message.error('已有此用戶');
       }
-      setUrl(window.location.host + '/#/register?username=' + value.username);
+      setUrl(window.location.host + '/project-manage/#/register?username=' + value.username);
       setSpinning(false);
     }, { onlyOnce: true })
   };

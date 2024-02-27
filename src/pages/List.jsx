@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Typography, Space, Table, Tag } from 'antd';
+import { Typography, Table, Tag, Flex, Button, Modal, Form, Input, Select, Radio, message } from 'antd';
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue } from "firebase/database";
+import { getDatabase, ref, onValue, set } from "firebase/database";
 
 const { Title } = Typography;
 
@@ -33,7 +33,10 @@ const levelList = {
 }
 
 const List = () => {
-  const [user, setUser] = useState({})
+  const [userInfo, setUserInfo ] = useState(JSON.parse(localStorage.getItem('userInfo')) || {});
+  const [user, setUser] = useState({});
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   const columns = [
     {
@@ -47,7 +50,7 @@ const List = () => {
       ),
     },
     {
-      title: 'ISSUE 名稱',
+      title: '項目名稱',
       dataIndex: 'name',
       key: 'name',
       render: (_, { name }) => (
@@ -138,17 +141,113 @@ const List = () => {
 
   const userRef = ref(db, '/users');
   onValue(userRef, (snapshot) => {
-    const userList = Object.entries(snapshot.val()).reduce((result, [key, profile]) => {
-      result[key] = profile.name;
+    const userList = Object.values(snapshot.val()).reduce((result, { username, name }) => {
+      result[username] = name;
       return result;
     }, {});
     setUser(userList)
-  }, { onlyOnce: true })
+  }, { onlyOnce: true });
+
+  const [form] = Form.useForm();
+
+  const openModal = () => {
+    form.resetFields();
+    setIsModalOpen(true);
+  };
+  const handleOk = async () => {
+    setAdding(true);
+    try {
+      const value = await form.validateFields();
+      const create = new Date();
+      const newIssue = {
+        ...value,
+        assign: value.assign || '',
+        id: create.getTime(),
+        creator: userInfo.username,
+        createdAt: create.toLocaleString(),
+        completedAt: '',
+        status: 'notStart'
+      }
+      set(ref(db, '/issues/' + create.getTime()), newIssue)
+        .then(() => {
+          message.success('新增成功');
+          setIsModalOpen(false);
+          setAdding(false);
+        })
+        .catch(() => {
+          message.error('新增失敗');
+          setAdding(false);
+        });
+    } catch (error) {
+      console.log(error)
+      message.error('請確認是否填寫正確');
+      setAdding(false);
+    }
+  };
 
   return (
     <div>
-      <Title level={3}>專案清單</Title>
+      <Flex justify='space-between' align='center'>
+        <Title style={{marginBottom:0}} level={3}>專案清單</Title>
+        <Button type="primary" onClick={openModal}>新增項目</Button>
+      </Flex>
       <Table columns={columns} dataSource={data} />
+      <Modal
+        title="新增項目"
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={()=>setIsModalOpen(false)}
+        closeIcon={false}
+        keyboard={false}
+        maskClosable={false}
+        confirmLoading={adding}
+      >
+        <Form form={form}>
+          <Form.Item
+            label="項目名稱"
+            name="name"
+            rules={[{ required: true, message: '請輸入名稱' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="指派對象"
+            name="assign"
+          >
+            <Select>
+              {Object.entries(user).map(([key, name]) => <Select.Option key={key} value={key}>{name}</Select.Option>)}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            label="內容"
+            name="content"
+            rules={[{ required: true, message: '請輸入任意內容' }]}
+          >
+            <Input.TextArea />
+          </Form.Item>
+          <Form.Item
+            label="類型"
+            name="type"
+            rules={[{ required: true, message: '請輸入項目類型' }]}
+          >
+            <Radio.Group buttonStyle="solid">
+              <Radio.Button value="Bug">Bug</Radio.Button>
+              <Radio.Button value="Task">Task</Radio.Button>
+            </Radio.Group>
+          </Form.Item>
+          <Form.Item
+            label="緊急程度"
+            name="level"
+            rules={[{ required: true, message: '請輸入緊急程度' }]}
+          >
+            <Radio.Group buttonStyle="solid">
+              <Radio.Button value={1}>Normal</Radio.Button>
+              <Radio.Button value={2}>Priority</Radio.Button>
+              <Radio.Button value={3}>Urgent</Radio.Button>
+            </Radio.Group>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   )
 }

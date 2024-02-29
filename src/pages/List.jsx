@@ -37,6 +37,8 @@ const List = () => {
   const [user, setUser] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [onLoad, setOnLoad] = useState(true);
+  const [issueList, setIssueList] = useState([])
 
   const columns = [
     {
@@ -139,14 +141,24 @@ const List = () => {
     },
   ];
 
-  const userRef = ref(db, '/users');
-  onValue(userRef, (snapshot) => {
-    const userList = Object.values(snapshot.val()).reduce((result, { username, name }) => {
-      result[username] = name;
-      return result;
-    }, {});
-    setUser(userList)
-  }, { onlyOnce: true });
+  if (onLoad) {
+    setOnLoad(false);
+
+    const userRef = ref(db, '/users');
+    onValue(userRef, (snapshot) => {
+      const userList = Object.values(snapshot.val()).reduce((result, { username, name }) => {
+        result[username] = name;
+        return result;
+      }, {});
+      setUser(userList)
+    }, { onlyOnce: true });
+
+    const issueRef = ref(db, '/issues');
+    onValue(issueRef, (snapshot) => {
+      const origin = Object.values(snapshot.val()).map((issue) => ({...issue, key: issue.id}))
+      setIssueList(origin);
+    }, { onlyOnce: true });
+  }
 
   const [form] = Form.useForm();
 
@@ -191,7 +203,7 @@ const List = () => {
         <Title style={{marginBottom:0}} level={3}>專案清單</Title>
         <Button type="primary" onClick={openModal}>新增項目</Button>
       </Flex>
-      <Table columns={columns} dataSource={data} />
+      <Table columns={columns} dataSource={issueList} />
       <Modal
         title="新增項目"
         open={isModalOpen}

@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { Typography, Table, Tag, Flex, Button, Modal, Form, Input, Select, Radio, message } from 'antd';
+import { Typography, Table, Tag, Flex, Button, Modal, Form, Input, Select, Radio, message, Drawer, Space, Divider } from 'antd';
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, onValue, set } from "firebase/database";
+
+import commonCss from '../assets/scss/common.module.scss'
 
 const { Title } = Typography;
 
@@ -39,6 +41,8 @@ const List = () => {
   const [adding, setAdding] = useState(false);
   const [onLoad, setOnLoad] = useState(true);
   const [issueList, setIssueList] = useState([])
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [drawerData, setDrawerData] = useState({ level: 1, status: 'notStart' });
 
   const columns = [
     {
@@ -55,9 +59,9 @@ const List = () => {
       title: '項目名稱',
       dataIndex: 'name',
       key: 'name',
-      render: (_, { name }) => (
+      render: (_, item) => (
         <>
-          <a>{name}</a>
+          <a onClick={() => openDrawer(item)}>{item.name}</a>
         </>
       ),
     },
@@ -101,45 +105,6 @@ const List = () => {
       key: 'createdAt',
     },
   ];
-  
-  const data = [
-    {
-      key: 1709002744334,
-      name: 'Issue 1',
-      creator: 'test',
-      assign: 'test',
-      createdAt: '2024/2/27 上午10:59:04',
-      completedAt: '2024/2/27 上午11:00:04',
-      content: '第一個需求',
-      status: 'completed',
-      type: 'Bug',
-      level: 1,
-    },
-    {
-      key: 1709002744560,
-      name: 'Issue 2',
-      creator: 'test',
-      assign: 'test2',
-      createdAt: '2024/2/27 上午11:00:04',
-      completedAt: '',
-      content: '第二個需求',
-      status: 'testing',
-      type: 'Bug',
-      level: 2,
-    },
-    {
-      key: 20240226174600,
-      name: 'Issue 3',
-      creator: 'test2',
-      assign: 'test',
-      createdAt: '2024/2/27 上午11:10:04',
-      completedAt: '',
-      content: '第三個需求',
-      status: 'notStart',
-      type: 'Task',
-      level: 3,
-    },
-  ];
 
   const issueRef = ref(db, '/issues');
   const userRef = ref(db, '/users');
@@ -165,16 +130,16 @@ const List = () => {
     getIssue();
   }
 
-  const [form] = Form.useForm();
+  const [addForm] = Form.useForm();
 
   const openModal = () => {
-    form.resetFields();
+    addForm.resetFields();
     setIsModalOpen(true);
   };
   const handleOk = async () => {
     setAdding(true);
     try {
-      const value = await form.validateFields();
+      const value = await addForm.validateFields();
       const create = new Date();
       const newIssue = {
         ...value,
@@ -203,6 +168,19 @@ const List = () => {
     }
   };
 
+  const [editForm] = Form.useForm();
+
+  const openDrawer = (issue) => {
+    editForm.setFieldsValue(issue)
+    setDrawerData(issue)
+    setIsDrawerOpen(true)
+  };
+
+  const drawerClose = () => {
+    setDrawerData({ level: 1, status: 'notStart' })
+    setIsDrawerOpen(false)
+  };
+
   return (
     <div>
       <Flex justify='space-between' align='center'>
@@ -220,7 +198,7 @@ const List = () => {
         maskClosable={false}
         confirmLoading={adding}
       >
-        <Form form={form}>
+        <Form form={addForm}>
           <Form.Item
             label="項目名稱"
             name="name"
@@ -266,6 +244,57 @@ const List = () => {
           </Form.Item>
         </Form>
       </Modal>
+      <Drawer
+        title={drawerData.name}
+        placement="right"
+        closeIcon={false}
+        keyboard={false}
+        maskClosable={false}
+        open={isDrawerOpen}
+        extra={
+          <Space>
+            <Button onClick={drawerClose}>Cancel</Button>
+            <Button onClick={drawerClose} type="primary">
+              Submit
+            </Button>
+          </Space>
+        }
+      >
+        <div className={commonCss.oneRow}>
+          <h4>名稱</h4>
+          <p>{drawerData.name}</p>
+        </div>
+        <div className={commonCss.oneRow}>
+          <h4>類型</h4>
+          {
+            drawerData.type == 'Bug' ?
+            <Tag color="red">Bug</Tag> :
+            <Tag color="orange">Task</Tag>
+          }
+        </div>
+        <div className={commonCss.oneRow}>
+          <h4>警急</h4>
+          <Tag color={levelList[drawerData.level].color}>{levelList[drawerData.level].text}</Tag>
+        </div>
+        <div className={commonCss.oneRow}>
+          <h4>狀態</h4>
+          <Tag color={statusList[drawerData.status].color}>{statusList[drawerData.status].text}</Tag>
+        </div>
+        <Divider />
+        <div style={{marginBottom:'12px'}}>
+          <h4 style={{marginBottom:'4px'}}>需求內容</h4>
+          <p>{drawerData.content}</p>
+        </div>
+        <Divider />
+        <div className={commonCss.oneRow}>
+          <h4>建立者</h4>
+          <p>{user[drawerData.creator]}</p>
+        </div>
+        <div className={commonCss.oneRow}>
+          <h4>指派對象</h4>
+          <p>{user[drawerData.assign]}</p>
+        </div>
+      </Drawer>
     </div>
   )
 }

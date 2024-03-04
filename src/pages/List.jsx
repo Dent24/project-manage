@@ -141,10 +141,19 @@ const List = () => {
     },
   ];
 
+  const issueRef = ref(db, '/issues');
+  const userRef = ref(db, '/users');
+
+  const getIssue = () => {
+    onValue(issueRef, (snapshot) => {
+      const origin = Object.values(snapshot.val()).map((issue) => ({...issue, key: issue.id}))
+      setIssueList(origin);
+    }, { onlyOnce: true });
+  }
+
   if (onLoad) {
     setOnLoad(false);
 
-    const userRef = ref(db, '/users');
     onValue(userRef, (snapshot) => {
       const userList = Object.values(snapshot.val()).reduce((result, { username, name }) => {
         result[username] = name;
@@ -153,11 +162,7 @@ const List = () => {
       setUser(userList)
     }, { onlyOnce: true });
 
-    const issueRef = ref(db, '/issues');
-    onValue(issueRef, (snapshot) => {
-      const origin = Object.values(snapshot.val()).map((issue) => ({...issue, key: issue.id}))
-      setIssueList(origin);
-    }, { onlyOnce: true });
+    getIssue();
   }
 
   const [form] = Form.useForm();
@@ -185,6 +190,7 @@ const List = () => {
           message.success('新增成功');
           setIsModalOpen(false);
           setAdding(false);
+          getIssue();
         })
         .catch(() => {
           message.error('新增失敗');

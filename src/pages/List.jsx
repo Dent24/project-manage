@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Typography, Table, Tag, Flex, Button, Modal, Form, Input, Select, Radio, message, Drawer, Space, Divider, Tooltip } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue, set, update } from "firebase/database";
+import { getDatabase, ref, onValue, set, update, remove } from "firebase/database";
 
 import commonCss from '../assets/scss/common.module.scss'
 
 const { Title } = Typography;
+const { confirm } = Modal;
 
 const firebaseConfig = {
   apiKey: "AIzaSyAxLefC8OwMMzDoWthvaY7XylvpOLwUYGo",
@@ -201,6 +202,22 @@ const List = () => {
     setIsDrawerOpen(false);
   };
 
+  const removeIssue = () => {
+    confirm({
+      title: '請確認是否刪除以下項目',
+      icon: <ExclamationCircleOutlined />,
+      content: drawerData.name,
+      okText: '確認',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk() {
+        remove(ref(db, '/issues/' + drawerData.id));
+        setIsDrawerOpen(false);
+        getIssue();
+      }
+    });
+  }
+
   return (
     <div>
       <Flex justify='space-between' align='center'>
@@ -271,9 +288,14 @@ const List = () => {
         onClose={() => setIsDrawerOpen(false)}
         open={isDrawerOpen}
         extra={
-          <Tooltip title="修改">
-            <Button shape="circle" icon={<EditOutlined />} onClick={editIssue} />
-          </Tooltip>
+          <Space>
+            <Tooltip title="修改">
+              <Button shape="circle" icon={<EditOutlined />} onClick={editIssue} />
+            </Tooltip>
+            <Tooltip title="刪除">
+              <Button danger shape="circle" icon={<DeleteOutlined />} onClick={removeIssue} />
+            </Tooltip>
+          </Space>
         }
       >
         <div className={commonCss.oneRow}>

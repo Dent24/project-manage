@@ -56,9 +56,7 @@ const Router = () => useRoutes([
 ])
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <HashRouter>
-      <Router />
-    </HashRouter>
-  </React.StrictMode>
+  <HashRouter>
+    <Router />
+  </HashRouter>
 )

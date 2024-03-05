@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Typography, Table, Tag, Flex, Button, Modal, Form, Input, Select, Radio, message, Drawer, Space, Divider, Tooltip } from 'antd';
 import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue, set, update, remove } from "firebase/database";
+import { getDatabase, ref, set, update, remove, get } from "firebase/database";
 
 import commonCss from '../assets/scss/common.module.scss'
 
@@ -113,7 +113,7 @@ const List = () => {
   const userRef = ref(db, '/users');
 
   const getIssue = () => {
-    onValue(issueRef, (snapshot) => {
+    get(issueRef).then((snapshot) => {
       const origin = Object.values(snapshot.val()).map((issue) => ({...issue, key: issue.id}))
       setIssueList(origin);
     }, { onlyOnce: true });
@@ -122,7 +122,7 @@ const List = () => {
   if (onLoad) {
     setOnLoad(false);
 
-    onValue(userRef, (snapshot) => {
+    get(userRef).then((snapshot) => {
       const userList = Object.values(snapshot.val()).reduce((result, { username, name }) => {
         result[username] = name;
         return result;

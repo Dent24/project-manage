@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Typography, Card, Button, Form, Input, message, Spin } from 'antd';
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue, set } from "firebase/database";
+import { getDatabase, ref, get, set } from "firebase/database";
 import { CopyOutlined } from '@ant-design/icons';
 
 import addMemberCss from '../assets/scss/addMember.module.scss'
@@ -31,7 +31,7 @@ const AddMember = () => {
     setSpinning(true);
 
     const userRef = ref(db, '/users/' + value.username);
-    onValue(userRef, async (snapshot) => {
+    get(userRef).then(async (snapshot) => {
       if (!snapshot.val()) {
         await set(ref(db, '/users/' + value.username), {
           username: value.username

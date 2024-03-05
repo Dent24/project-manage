@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, Button, Form, Input, message, Spin } from 'antd';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue, set } from "firebase/database";
+import { getDatabase, ref, get, set } from "firebase/database";
 
 import loginCss from '../assets/scss/login.module.scss'
 
@@ -24,7 +24,7 @@ const Home = () => {
   const onFinish = (values) => {
     setSpinning(true)
     const userRef = ref(db, '/users/' + username);
-    onValue(userRef, async (snapshot) => {
+    get(userRef).then(async (snapshot) => {
       if (snapshot.val()) {
         const user = snapshot.val()
         if (!user.name) {

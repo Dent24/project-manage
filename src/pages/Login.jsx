@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, Button, Form, Input, Spin, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue } from "firebase/database";
+import { getDatabase, ref, get } from "firebase/database";
 
 import loginCss from '../assets/scss/login.module.scss'
 
@@ -24,7 +24,7 @@ const Login = () => {
   const onFinish = (values) => {
     setSpinning(true);
     const userRef = ref(db, '/users/' + values.username);
-    onValue(userRef, (snapshot) => {
+    get(userRef).then((snapshot) => {
       if (!snapshot.val()) {
         message.error('無此用戶');
       } else {

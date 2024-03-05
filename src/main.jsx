@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import AddMember from './pages/AddMember';
 import List from './pages/List';
+import Kanban from './pages/KanBan';
 
 import './index.css'
 
@@ -31,6 +32,11 @@ const Router = () => useRoutes([
         path: '/addMember',
         element: <AddMember />,
         name: 'addMember'
+      },
+      {
+        path: '/kanban',
+        element: <Kanban />,
+        name: 'kanban'
       },
     ],
   },

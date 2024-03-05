@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Typography, Table, Tag, Flex, Button, Modal, Form, Input, Select, Radio, message, Drawer, Space, Divider, Tooltip } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue, set } from "firebase/database";
+import { getDatabase, ref, onValue, set, update } from "firebase/database";
 
 import commonCss from '../assets/scss/common.module.scss'
 
@@ -176,8 +176,17 @@ const List = () => {
   };
 
   const updateIssue = (value) => {
-    console.log(value);
-    setAdding(false);
+    update(ref(db, '/issues/' + drawerData.id), value)
+      .then(() => {
+        message.success('修改成功');
+        setIsModalOpen(false);
+        setAdding(false);
+        getIssue();
+      })
+      .catch(() => {
+        message.error('修改失敗');
+        setAdding(false);
+      });
   };
 
   const openDrawer = (issue) => {

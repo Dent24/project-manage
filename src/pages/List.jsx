@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Typography, Table, Tag, Flex, Button, Modal, Form, Input, Select, Radio, message, Drawer, Space, Divider } from 'antd';
+import { Typography, Table, Tag, Flex, Button, Modal, Form, Input, Select, Radio, message, Drawer, Space, Divider, Tooltip } from 'antd';
+import { EditOutlined } from '@ant-design/icons';
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, onValue, set } from "firebase/database";
 
@@ -43,6 +44,7 @@ const List = () => {
   const [issueList, setIssueList] = useState([])
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerData, setDrawerData] = useState({ level: 1, status: 'notStart' });
+  const [isEdit, setIsEdit] = useState(false);
 
   const columns = [
     {
@@ -134,33 +136,14 @@ const List = () => {
 
   const openModal = () => {
     addForm.resetFields();
+    setIsEdit(false);
     setIsModalOpen(true);
   };
   const handleOk = async () => {
     setAdding(true);
     try {
       const value = await addForm.validateFields();
-      const create = new Date();
-      const newIssue = {
-        ...value,
-        assign: value.assign || '',
-        id: create.getTime(),
-        creator: userInfo.username,
-        createdAt: create.toLocaleString(),
-        completedAt: '',
-        status: 'notStart'
-      }
-      set(ref(db, '/issues/' + create.getTime()), newIssue)
-        .then(() => {
-          message.success('新增成功');
-          setIsModalOpen(false);
-          setAdding(false);
-          getIssue();
-        })
-        .catch(() => {
-          message.error('新增失敗');
-          setAdding(false);
-        });
+      isEdit ? updateIssue(value) :createIssue(value);
     } catch (error) {
       console.log(error)
       message.error('請確認是否填寫正確');
@@ -168,17 +151,45 @@ const List = () => {
     }
   };
 
-  const [editForm] = Form.useForm();
-
-  const openDrawer = (issue) => {
-    editForm.setFieldsValue(issue)
-    setDrawerData(issue)
-    setIsDrawerOpen(true)
+  const createIssue = (value) => {
+    const create = new Date();
+    const newIssue = {
+      ...value,
+      assign: value.assign || '',
+      id: create.getTime(),
+      creator: userInfo.username,
+      createdAt: create.toLocaleString(),
+      completedAt: '',
+      status: 'notStart'
+    }
+    set(ref(db, '/issues/' + create.getTime()), newIssue)
+      .then(() => {
+        message.success('新增成功');
+        setIsModalOpen(false);
+        setAdding(false);
+        getIssue();
+      })
+      .catch(() => {
+        message.error('新增失敗');
+        setAdding(false);
+      });
   };
 
-  const drawerClose = () => {
-    setDrawerData({ level: 1, status: 'notStart' })
-    setIsDrawerOpen(false)
+  const updateIssue = (value) => {
+    console.log(value);
+    setAdding(false);
+  };
+
+  const openDrawer = (issue) => {
+    setDrawerData(issue);
+    setIsDrawerOpen(true);
+  };
+
+  const editIssue = () => {
+    addForm.setFieldsValue(drawerData);
+    setIsEdit(true);
+    setIsModalOpen(true);
+    setIsDrawerOpen(false);
   };
 
   return (
@@ -189,7 +200,7 @@ const List = () => {
       </Flex>
       <Table columns={columns} dataSource={issueList} />
       <Modal
-        title="新增項目"
+        title={isEdit ? '修改項目' : '新增項目'}
         open={isModalOpen}
         onOk={handleOk}
         onCancel={()=>setIsModalOpen(false)}
@@ -248,16 +259,12 @@ const List = () => {
         title={drawerData.name}
         placement="right"
         closeIcon={false}
-        keyboard={false}
-        maskClosable={false}
+        onClose={() => setIsDrawerOpen(false)}
         open={isDrawerOpen}
         extra={
-          <Space>
-            <Button onClick={drawerClose}>Cancel</Button>
-            <Button onClick={drawerClose} type="primary">
-              Submit
-            </Button>
-          </Space>
+          <Tooltip title="修改">
+            <Button shape="circle" icon={<EditOutlined />} onClick={editIssue} />
+          </Tooltip>
         }
       >
         <div className={commonCss.oneRow}>
@@ -289,6 +296,10 @@ const List = () => {
         <div className={commonCss.oneRow}>
           <h4>建立者</h4>
           <p>{user[drawerData.creator]}</p>
+        </div>
+        <div className={commonCss.oneRow}>
+          <h4>建立時間</h4>
+          <p>{drawerData.createdAt}</p>
         </div>
         <div className={commonCss.oneRow}>
           <h4>指派對象</h4>

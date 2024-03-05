@@ -336,6 +336,10 @@ const List = () => {
           <h4>指派對象</h4>
           <p>{user[drawerData.assign]}</p>
         </div>
+        <div className={commonCss.oneRow}>
+          <h4>完成時間</h4>
+          <p>{drawerData.completedAt}</p>
+        </div>
       </Drawer>
     </div>
   )

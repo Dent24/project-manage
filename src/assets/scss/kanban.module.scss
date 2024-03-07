@@ -1,0 +1,39 @@
+.kanban {
+  display: flex;
+  margin-top: 20px;
+}
+
+.column {
+  display: flex;
+  margin-right: 8px;
+  padding: 24px 0;
+  flex-direction: column;
+
+  h2 {
+    margin: 0;
+    padding: 0 16px;
+  }
+
+  .list {
+    display: flex;
+    margin-top: 8px;
+    padding: 16px;
+    flex-direction: column;
+    flex-grow: 1px;
+    background-color: #ddd;
+    border-radius: 8px;
+  }
+}
+
+.item {
+  margin-top: 8px;
+  padding: 4px 8px;
+  background-color: #eee;
+  border-radius: 4px;
+  transition: background-color .8s ease-out;
+
+  &:hover {
+    background-color: #fff;
+    transition: background-color .1s ease-in;
+  }
+}

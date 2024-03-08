@@ -2,11 +2,11 @@ import { Draggable } from 'react-beautiful-dnd'
 
 import kanbanCss from '../../assets/scss/kanban.module.scss'
 
-const Item = ({ text, index }) => {
+const Item = ({ issue, index }) => {
   return (
-    <Draggable draggableId={text} index={index}>
+    <Draggable draggableId={`${issue.id}`} index={index}>
       {(provided) => (
-        <div className={kanbanCss.item} ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>{text}</div>
+        <div className={kanbanCss.item} ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>{issue.name}</div>
       )}
     </Draggable>
   )

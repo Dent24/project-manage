@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Typography } from 'antd';
 import { DragDropContext } from "react-beautiful-dnd";
 import { initializeApp } from "firebase/app";
+import _ from 'lodash'
 import { getDatabase, ref, set, update, remove, get } from "firebase/database";
 import kanbanCss from '../assets/scss/kanban.module.scss'
 
@@ -46,19 +47,31 @@ const statusList = {
 }
 
 const Kanban = () => {
-  const [columns, setColumns] = useState({});
+  const [columns, setColumns] = useState(statusList);
   const [onLoad, setOnLoad] = useState(true);
+  const [user, setUser] = useState({});
 
   const issueRef = ref(db, '/issues');
+  const userRef = ref(db, '/users');
 
   if (onLoad) {
     setOnLoad(false);
+    const result = _.cloneDeep(statusList)
     get(issueRef).then((snapshot) => {
       Object.values(snapshot.val()).forEach((issue) => {
-        statusList[issue.status].list.push(issue);
+        console.log(issue)
+        result[issue.status].list.push(issue);
       });
-      setColumns(statusList);
+      setColumns(result);
     });
+
+    get(userRef).then((snapshot) => {
+      const userList = Object.values(snapshot.val()).reduce((result, { username, name }) => {
+        result[username] = name;
+        return result;
+      }, {});
+      setUser(userList)
+    }, { onlyOnce: true });
   }
 
   const onDragEnd = ({ source, destination }) => {
@@ -94,7 +107,7 @@ const Kanban = () => {
       <DragDropContext onDragEnd={onDragEnd}>
         <div className={kanbanCss.kanban}>
         {Object.values(columns).map(col => (
-          <Column col={col} key={col.id} />
+          <Column col={col} key={col.id} user={user} />
         ))}
         </div>
       </DragDropContext>

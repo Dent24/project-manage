@@ -5,7 +5,7 @@
 .kanban {
   display: flex;
   margin-top: 20px;
-  width: 1470px;
+  width: 2450px;
   height: 80vh;
 }
 
@@ -14,7 +14,7 @@
   margin-right: 8px;
   padding: 24px 0;
   flex-direction: column;
-  width: 210px;
+  width: 350px;
   height: 100%;
 
   h2 {
@@ -31,18 +31,10 @@
     flex-grow: 1px;
     background-color: #ddd;
     border-radius: 8px;
+    overflow-y: scroll;
   }
 }
 
 .item {
   margin-top: 8px;
-  padding: 4px 8px;
-  background-color: #eee;
-  border-radius: 4px;
-  transition: background-color .8s ease-out;
-
-  &:hover {
-    background-color: #fff;
-    transition: background-color .1s ease-in;
-  }
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Typography } from 'antd';
+import { Typography, message, Spin } from 'antd';
 import { DragDropContext } from "react-beautiful-dnd";
 import { initializeApp } from "firebase/app";
 import _ from 'lodash'
@@ -44,6 +44,7 @@ const Kanban = () => {
   const [user, setUser] = useState({});
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerData, setDrawerData] = useState({ level: 1, status: 'notStart' });
+  const [spinning, setSpinning] = useState(false);
 
   const issueRef = ref(db, '/issues');
   const userRef = ref(db, '/users');
@@ -82,14 +83,24 @@ const Kanban = () => {
 
       setColumns(state => ({ ...state, [newCol.id]: newCol }))
     } else {
-      const newStartList = start.list.filter((_, idx) => idx !== source.index)
-      const newStartCol = { id: start.id, list: newStartList, text: start.text }
-
-      const newEndList = end.list
-      newEndList.splice(destination.index, 0, start.list[source.index])
-      const newEndCol = { id: end.id, list: newEndList, text: end.text }
-
-      setColumns(state => ({ ...state, [newStartCol.id]: newStartCol, [newEndCol.id]: newEndCol }))
+      setSpinning(true);
+      update(ref(db, '/issues/' + start.list[source.index].id), { status: destination.droppableId })
+        .then(() => {
+          message.success('更新成功');
+          setSpinning(false);
+          const newStartList = start.list.filter((_, idx) => idx !== source.index)
+          const newStartCol = { id: start.id, list: newStartList, text: start.text }
+    
+          const newEndList = end.list
+          newEndList.splice(destination.index, 0, start.list[source.index])
+          const newEndCol = { id: end.id, list: newEndList, text: end.text }
+    
+          setColumns(state => ({ ...state, [newStartCol.id]: newStartCol, [newEndCol.id]: newEndCol }))
+        })
+        .catch(() => {
+          message.error('更新失敗');
+          setSpinning(false);
+        });
     }
     return null
   }
@@ -117,6 +128,7 @@ const Kanban = () => {
         statusList={statusList}
         user={user}
       />
+      <Spin spinning={spinning} fullscreen />
     </div>
   )
 }

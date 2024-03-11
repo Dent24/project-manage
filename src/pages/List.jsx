@@ -244,6 +244,7 @@ const List = () => {
         levelList={levelList}
         statusList={statusList}
         user={user}
+        hasAction
       />
     </div>
   )

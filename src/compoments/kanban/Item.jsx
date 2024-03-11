@@ -1,5 +1,6 @@
 import { Draggable } from 'react-beautiful-dnd'
-import { Card, Tag } from 'antd';
+import { Card, Tag, Tooltip, Button } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 
 import kanbanCss from '../../assets/scss/kanban.module.scss'
 import commonCss from '../../assets/scss/common.module.scss'
@@ -10,7 +11,7 @@ const levelList = {
   3: { color: 'red', text: 'urgent' }
 }
 
-const Item = ({ issue, index, user }) => {
+const Item = ({ issue, index, user, openDrawer }) => {
   return (
     <Draggable draggableId={`${issue.id}`} index={index}>
       {(provided) => (
@@ -20,6 +21,11 @@ const Item = ({ issue, index, user }) => {
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
+          extra={
+            <Tooltip title="查看">
+              <Button shape="circle" icon={<SearchOutlined />} onClick={() => openDrawer(issue)} />
+            </Tooltip>
+          }
         >
           <div className={commonCss.oneRow}>
             <h4>類型</h4>

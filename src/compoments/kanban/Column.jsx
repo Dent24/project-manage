@@ -3,7 +3,7 @@ import Item from './Item'
 
 import kanbanCss from '../../assets/scss/kanban.module.scss'
 
-const Column = ({ col: { id, list, text }, user }) => {
+const Column = ({ col: { id, list, text }, user, openDrawer }) => {
   return (
     <Droppable droppableId={id}>
       {(provided) => (
@@ -11,7 +11,7 @@ const Column = ({ col: { id, list, text }, user }) => {
           <h2>{text}</h2>
           <div className={kanbanCss.list} {...provided.droppableProps} ref={provided.innerRef}>
             {list.map((issue, index) => (
-              <Item key={issue.id} issue={issue} index={index} user={user} />
+              <Item key={issue.id} issue={issue} index={index} user={user} openDrawer={openDrawer} />
             ))}
             {provided.placeholder}
           </div>

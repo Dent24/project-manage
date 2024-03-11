@@ -6,6 +6,7 @@ import _ from 'lodash'
 import { getDatabase, ref, set, update, remove, get } from "firebase/database";
 import kanbanCss from '../assets/scss/kanban.module.scss'
 
+import IssueDrawer from '../compoments/list/IssueDrawer';
 import Column from '../compoments/kanban/Column'
 
 const { Title } = Typography;
@@ -21,21 +22,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const initialColumns = {
-  todo: {
-    id: 'todo',
-    list: ['item 1', 'item 2', 'item 3']
-  },
-  doing: {
-    id: 'doing',
-    list: []
-  },
-  done: {
-    id: 'done',
-    list: []
-  }
-}
-
 const statusList = {
   notStart: { id: 'notStart', text: '未開始', list: [] },
   planning: { id: 'planning', text: '計畫中', list: [] },
@@ -46,10 +32,18 @@ const statusList = {
   notWork: { id: 'notWork', text: '不執行', list: [] }
 }
 
+const levelList = {
+  1: { color: 'green', text: 'normal' },
+  2: { color: 'orange', text: 'priority' },
+  3: { color: 'red', text: 'urgent' }
+}
+
 const Kanban = () => {
   const [columns, setColumns] = useState(statusList);
   const [onLoad, setOnLoad] = useState(true);
   const [user, setUser] = useState({});
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [drawerData, setDrawerData] = useState({ level: 1, status: 'notStart' });
 
   const issueRef = ref(db, '/issues');
   const userRef = ref(db, '/users');
@@ -59,7 +53,6 @@ const Kanban = () => {
     const result = _.cloneDeep(statusList)
     get(issueRef).then((snapshot) => {
       Object.values(snapshot.val()).forEach((issue) => {
-        console.log(issue)
         result[issue.status].list.push(issue);
       });
       setColumns(result);
@@ -101,16 +94,29 @@ const Kanban = () => {
     return null
   }
 
+  const openDrawer = (issue) => {
+    setDrawerData(issue);
+    setIsDrawerOpen(true);
+  };
+
   return (
     <div className={kanbanCss.page}>
       <Title level={3}>看板</Title>
       <DragDropContext onDragEnd={onDragEnd}>
         <div className={kanbanCss.kanban}>
         {Object.values(columns).map(col => (
-          <Column col={col} key={col.id} user={user} />
+          <Column col={col} key={col.id} user={user} openDrawer={openDrawer} />
         ))}
         </div>
       </DragDropContext>
+      <IssueDrawer
+        drawerData={drawerData}
+        setIsDrawerOpen={setIsDrawerOpen}
+        isDrawerOpen={isDrawerOpen}
+        levelList={levelList}
+        statusList={statusList}
+        user={user}
+      />
     </div>
   )
 }

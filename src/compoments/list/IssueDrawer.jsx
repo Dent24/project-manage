@@ -3,7 +3,7 @@ import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
 import commonCss from '../../assets/scss/common.module.scss'
 
-const IssueDrawer = ({ drawerData, setIsDrawerOpen, isDrawerOpen, editIssue, removeIssue, levelList, statusList, user }) => {
+const IssueDrawer = ({ drawerData, setIsDrawerOpen, isDrawerOpen, editIssue, removeIssue, levelList, statusList, user, hasAction }) => {
   return (
     <Drawer
       title={drawerData.name}
@@ -12,6 +12,7 @@ const IssueDrawer = ({ drawerData, setIsDrawerOpen, isDrawerOpen, editIssue, rem
       onClose={() => setIsDrawerOpen(false)}
       open={isDrawerOpen}
       extra={
+        !hasAction ? '' :
         <Space>
           <Tooltip title="修改">
             <Button shape="circle" icon={<EditOutlined />} onClick={editIssue} />

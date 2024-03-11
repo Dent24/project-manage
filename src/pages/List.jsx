@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Typography, Table, Tag, Flex, Button, Modal, Form, Input, Select, Radio, message, Drawer, Space, Divider, Tooltip } from 'antd';
-import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { Typography, Table, Tag, Flex, Button, Modal, Form, message } from 'antd';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, set, update, remove, get } from "firebase/database";
 
-import commonCss from '../assets/scss/common.module.scss'
+import IssuePop from '../compoments/list/IssuePop';
+import IssueDrawer from '../compoments/list/IssueDrawer';
 
 const { Title } = Typography;
 const { confirm } = Modal;
@@ -225,122 +226,25 @@ const List = () => {
         <Button type="primary" onClick={openModal}>新增項目</Button>
       </Flex>
       <Table columns={columns} dataSource={issueList} />
-      <Modal
-        title={isEdit ? '修改項目' : '新增項目'}
-        open={isModalOpen}
-        onOk={handleOk}
-        onCancel={()=>setIsModalOpen(false)}
-        closeIcon={false}
-        keyboard={false}
-        maskClosable={false}
-        confirmLoading={adding}
-      >
-        <Form form={addForm}>
-          <Form.Item
-            label="項目名稱"
-            name="name"
-            rules={[{ required: true, message: '請輸入名稱' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="指派對象"
-            name="assign"
-          >
-            <Select>
-              {Object.entries(user).map(([key, name]) => <Select.Option key={key} value={key}>{name}</Select.Option>)}
-            </Select>
-          </Form.Item>
-          <Form.Item
-            label="內容"
-            name="content"
-            rules={[{ required: true, message: '請輸入任意內容' }]}
-          >
-            <Input.TextArea />
-          </Form.Item>
-          <Form.Item
-            label="類型"
-            name="type"
-            rules={[{ required: true, message: '請輸入項目類型' }]}
-          >
-            <Radio.Group buttonStyle="solid">
-              <Radio.Button value="Bug">Bug</Radio.Button>
-              <Radio.Button value="Task">Task</Radio.Button>
-            </Radio.Group>
-          </Form.Item>
-          <Form.Item
-            label="緊急程度"
-            name="level"
-            rules={[{ required: true, message: '請輸入緊急程度' }]}
-          >
-            <Radio.Group buttonStyle="solid">
-              <Radio.Button value={1}>Normal</Radio.Button>
-              <Radio.Button value={2}>Priority</Radio.Button>
-              <Radio.Button value={3}>Urgent</Radio.Button>
-            </Radio.Group>
-          </Form.Item>
-        </Form>
-      </Modal>
-      <Drawer
-        title={drawerData.name}
-        placement="right"
-        closeIcon={false}
-        onClose={() => setIsDrawerOpen(false)}
-        open={isDrawerOpen}
-        extra={
-          <Space>
-            <Tooltip title="修改">
-              <Button shape="circle" icon={<EditOutlined />} onClick={editIssue} />
-            </Tooltip>
-            <Tooltip title="刪除">
-              <Button danger shape="circle" icon={<DeleteOutlined />} onClick={removeIssue} />
-            </Tooltip>
-          </Space>
-        }
-      >
-        <div className={commonCss.oneRow}>
-          <h4>名稱</h4>
-          <p>{drawerData.name}</p>
-        </div>
-        <div className={commonCss.oneRow}>
-          <h4>類型</h4>
-          {
-            drawerData.type == 'Bug' ?
-            <Tag color="red">Bug</Tag> :
-            <Tag color="orange">Task</Tag>
-          }
-        </div>
-        <div className={commonCss.oneRow}>
-          <h4>警急</h4>
-          <Tag color={levelList[drawerData.level].color}>{levelList[drawerData.level].text}</Tag>
-        </div>
-        <div className={commonCss.oneRow}>
-          <h4>狀態</h4>
-          <Tag color={statusList[drawerData.status].color}>{statusList[drawerData.status].text}</Tag>
-        </div>
-        <Divider />
-        <div style={{marginBottom:'12px'}}>
-          <h4 style={{marginBottom:'4px'}}>需求內容</h4>
-          <p>{drawerData.content}</p>
-        </div>
-        <Divider />
-        <div className={commonCss.oneRow}>
-          <h4>建立者</h4>
-          <p>{user[drawerData.creator]}</p>
-        </div>
-        <div className={commonCss.oneRow}>
-          <h4>建立時間</h4>
-          <p>{drawerData.createdAt}</p>
-        </div>
-        <div className={commonCss.oneRow}>
-          <h4>指派對象</h4>
-          <p>{user[drawerData.assign]}</p>
-        </div>
-        <div className={commonCss.oneRow}>
-          <h4>完成時間</h4>
-          <p>{drawerData.completedAt}</p>
-        </div>
-      </Drawer>
+      <IssuePop
+        isEdit={isEdit}
+        isModalOpen={isModalOpen}
+        handleOk={handleOk}
+        setIsModalOpen={setIsModalOpen}
+        adding={adding}
+        addForm={addForm}
+        user={user}
+      />
+      <IssueDrawer
+        drawerData={drawerData}
+        setIsDrawerOpen={setIsDrawerOpen}
+        isDrawerOpen={isDrawerOpen}
+        editIssue={editIssue}
+        removeIssue={removeIssue}
+        levelList={levelList}
+        statusList={statusList}
+        user={user}
+      />
     </div>
   )
 }

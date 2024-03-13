@@ -4,6 +4,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearSca
 import { Doughnut, Bar } from 'react-chartjs-2';
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, get } from "firebase/database";
+import _ from 'lodash'
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
 
@@ -43,9 +44,12 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const Home = () => {
-  const [allIssue, setAllIssue] = useState(data);
+  const [allIssue, setAllIssue] = useState(_.cloneDeep(data));
   const [assignIssue, setAssignIssue] = useState({});
+  const [notCompleteIssue, setNotCompleteIssue] = useState({});
+  const [userIssue, setUserIssue] = useState(_.cloneDeep(data));
   const [onLoad, setOnLoad] = useState(true);
+  const [userInfo, setUserInfo] = useState(JSON.parse(localStorage.getItem('userInfo')) || {});
 
   if (onLoad) {
     const issueRef = ref(db, '/issues');
@@ -59,11 +63,26 @@ const Home = () => {
       notWork: 0,
       planning: 0
     };
+    const userStatusList = {
+      notStart: 0,
+      progress: 0,
+      testing: 0,
+      completed: 0,
+      needFix: 0,
+      notWork: 0,
+      planning: 0
+    };
 
     Promise.all([get(userRef), get(issueRef)])
       .then((values) => {
+        const nowUser = userInfo.username
+        console.log(nowUser)
         const userList = Object.values(values[0].val()).reduce((result, { username }) => {
-          result[username] = { assign: 0, color: `rgba(${Math.floor(Math.random()*256)}, ${Math.floor(Math.random()*256)}, ${Math.floor(Math.random()*256)})` };
+          result[username] = {
+            assign: 0,
+            notComplete: 0,
+            color: `rgba(${Math.floor(Math.random()*256)}, ${Math.floor(Math.random()*256)}, ${Math.floor(Math.random()*256)})`
+          };
           return result;
         }, {});
         userList['none'] = { assign: 0, color: 'rgba(0, 0, 0)' };
@@ -72,6 +91,8 @@ const Home = () => {
         Object.values(originData).forEach((issue) => {
           statusList[issue.status] += 1;
           userList[issue.assign || 'none'].assign += 1
+          if (issue.status !== 'completed' && issue.status !== 'notWork') userList[issue.assign || 'none'].notComplete += 1;
+          if (issue.assign == nowUser) userStatusList[issue.status] += 1;
         });
 
         const stateAllIssue = allIssue;
@@ -88,6 +109,22 @@ const Home = () => {
         }
         stateAssignIssue.labels.push('未指派');
         setAssignIssue(stateAssignIssue);
+
+        const stateNotCompleteIssue = {
+          labels: Object.values(values[0].val()).map((issue) => issue.name),
+          datasets: [{
+            label: '未完成數量',
+            data: Object.values(userList).map((user) => user.notComplete),
+            backgroundColor: Object.values(userList).map((user) => user.color)
+          }]
+        }
+        stateNotCompleteIssue.labels.push('未指派');
+        setNotCompleteIssue(stateNotCompleteIssue);
+
+        const stateUserIssue = userIssue;
+        stateUserIssue.datasets[0].data = Object.values(userStatusList);
+        setUserIssue(stateUserIssue);
+
         setOnLoad(false);
       });
   }
@@ -106,8 +143,18 @@ const Home = () => {
           </div>
         </Card>
       </Col>
-      <Col span={6}>col-6</Col>
-      <Col span={6}>col-6</Col>
+      <Col span={6}>
+        <Card title='各使用者未完成數量'>
+          <div style={{height:'400px'}}>
+          { onLoad ? '' : <Bar options={horizonOption} data={notCompleteIssue} /> }
+          </div>
+        </Card>
+      </Col>
+      <Col span={6}>
+        <Card title={`${userInfo.name}項目狀態`}>
+          { onLoad ? '' : <Doughnut data={userIssue} /> }
+        </Card>
+      </Col>
       <Spin spinning={onLoad} fullscreen />
     </Row>
   )

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Typography, Table, Tag, Flex, Button, Modal, Form, message } from 'antd';
+import { Typography, Table, Tag, Flex, Button, Modal, Form, message, Col, Row, Select } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, set, update, remove, get } from "firebase/database";
@@ -219,12 +219,63 @@ const List = () => {
     });
   }
 
+  const [filterForm] = Form.useForm();
+
+  const filterList = (value) => {
+    console.log(filterForm.getFieldValue())
+  }
+
   return (
     <div>
       <Flex justify='space-between' align='center'>
         <Title style={{marginBottom:0}} level={3}>專案清單</Title>
         <Button type="primary" onClick={openModal}>新增項目</Button>
       </Flex>
+      <Form form={filterForm} onValuesChange={filterList} style={{marginTop:24}}>
+        <Row gutter={16}>
+          <Col span={6}>
+            <Form.Item
+              label="指派對象"
+              name="assign"
+            >
+              <Select mode="multiple" allowClear>
+                {Object.entries(user).map(([key, name]) => <Select.Option key={key} value={key}>{name}</Select.Option>)}
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col span={6}>
+            <Form.Item
+              label="種類"
+              name="type"
+            >
+              <Select allowClear>
+                <Select.Option key='type' value='type'>Type</Select.Option>
+                <Select.Option key='bug' value='bug'>Bug</Select.Option>
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col span={6}>
+            <Form.Item
+              label="緊急程度"
+              name="level"
+            >
+              <Select mode="multiple" allowClear>
+                {Object.values(levelList).map((level) => <Select.Option key={level.text} value={level.text}>{level.text}</Select.Option>)}
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col span={6}>
+            <Form.Item
+              label="進度"
+              name="status"
+            >
+              <Select mode="multiple" allowClear>
+                {Object.entries(statusList).map(([key, status]) => <Select.Option key={key} value={key}>{status.text}</Select.Option>)}
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
+      </Form>
       <Table columns={columns} dataSource={issueList} />
       <IssuePop
         isEdit={isEdit}

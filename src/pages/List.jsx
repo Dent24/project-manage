@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Typography, Table, Tag, Flex, Button, Modal, Form, message, Col, Row, Select } from 'antd';
+import { Typography, Table, Tag, Flex, Button, Modal, Form, message, Col, Row, Select, Spin } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, set, update, remove, get } from "firebase/database";
@@ -47,6 +47,7 @@ const List = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerData, setDrawerData] = useState({ level: 1, status: 'notStart' });
   const [isEdit, setIsEdit] = useState(false);
+  const [spinning, setSpinning] = useState(false);
 
   const columns = [
     {
@@ -113,16 +114,38 @@ const List = () => {
   const issueRef = ref(db, '/issues');
   const userRef = ref(db, '/users');
 
+  const [addForm] = Form.useForm();
+  const [filterForm] = Form.useForm();
+
   const getIssue = () => {
+    const { assign, type, level, status } = filterForm.getFieldValue()
+
     get(issueRef).then((snapshot) => {
-      const origin = Object.values(snapshot.val()).map((issue) => ({...issue, key: issue.id}))
+      let origin = Object.values(snapshot.val()).map((issue) => ({...issue, key: issue.id}));
+
+      if (assign && !!assign.length) {
+        origin = origin.filter((issue) => assign.some((user) => user == issue.assign));
+      }
+
+      if (type) {
+        origin = origin.filter((issue) => type == issue.type);
+      }
+
+      if (level && !!level.length) {
+        origin = origin.filter((issue) => level.some((lvl) => lvl == issue.level));
+      }
+
+      if (status && !!status.length) {
+        origin = origin.filter((issue) => status.some((stu) => stu == issue.status));
+      }
+
       setIssueList(origin);
+      setSpinning(false);
     }, { onlyOnce: true });
   }
 
   if (onLoad) {
     setOnLoad(false);
-
     get(userRef).then((snapshot) => {
       const userList = Object.values(snapshot.val()).reduce((result, { username, name }) => {
         result[username] = name;
@@ -133,8 +156,6 @@ const List = () => {
 
     getIssue();
   }
-
-  const [addForm] = Form.useForm();
 
   const openModal = () => {
     addForm.resetFields();
@@ -219,10 +240,9 @@ const List = () => {
     });
   }
 
-  const [filterForm] = Form.useForm();
-
-  const filterList = (value) => {
-    console.log(filterForm.getFieldValue())
+  const filterList = () => {
+    setSpinning(true);
+    getIssue();
   }
 
   return (
@@ -240,6 +260,7 @@ const List = () => {
             >
               <Select mode="multiple" allowClear>
                 {Object.entries(user).map(([key, name]) => <Select.Option key={key} value={key}>{name}</Select.Option>)}
+                <Select.Option value={false}>未指派</Select.Option>
               </Select>
             </Form.Item>
           </Col>
@@ -249,8 +270,8 @@ const List = () => {
               name="type"
             >
               <Select allowClear>
-                <Select.Option key='type' value='type'>Type</Select.Option>
-                <Select.Option key='bug' value='bug'>Bug</Select.Option>
+                <Select.Option key='task' value='Task'>Task</Select.Option>
+                <Select.Option key='bug' value='Bug'>Bug</Select.Option>
               </Select>
             </Form.Item>
           </Col>
@@ -260,7 +281,7 @@ const List = () => {
               name="level"
             >
               <Select mode="multiple" allowClear>
-                {Object.values(levelList).map((level) => <Select.Option key={level.text} value={level.text}>{level.text}</Select.Option>)}
+                {Object.entries(levelList).map(([key, level]) => <Select.Option key={key} value={key}>{level.text}</Select.Option>)}
               </Select>
             </Form.Item>
           </Col>
@@ -297,6 +318,7 @@ const List = () => {
         user={user}
         hasAction
       />
+      <Spin spinning={onLoad || spinning} fullscreen />
     </div>
   )
 }

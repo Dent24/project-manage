@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Typography, Table, Tag, Flex, Button, Modal, Form, message, Col, Row, Select, Spin } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { initializeApp } from "firebase/app";
@@ -117,6 +118,8 @@ const List = () => {
   const [addForm] = Form.useForm();
   const [filterForm] = Form.useForm();
 
+  const [searchParams] = useSearchParams();
+
   const getIssue = () => {
     const { assign, type, level, status } = filterForm.getFieldValue()
 
@@ -144,24 +147,12 @@ const List = () => {
     }, { onlyOnce: true });
   }
 
-  if (onLoad) {
-    setOnLoad(false);
-    get(userRef).then((snapshot) => {
-      const userList = Object.values(snapshot.val()).reduce((result, { username, name }) => {
-        result[username] = name;
-        return result;
-      }, {});
-      setUser(userList)
-    }, { onlyOnce: true });
-
-    getIssue();
-  }
-
   const openModal = () => {
     addForm.resetFields();
     setIsEdit(false);
     setIsModalOpen(true);
   };
+
   const handleOk = async () => {
     setAdding(true);
     try {
@@ -242,6 +233,28 @@ const List = () => {
 
   const filterList = () => {
     setSpinning(true);
+    getIssue();
+  }
+
+  if (onLoad) {
+    setOnLoad(false);
+
+    const filterParam = {
+      type: searchParams.get('type'),
+      assign: searchParams.get('assign') && searchParams.get('assign').split(','),
+      level: searchParams.get('level') && searchParams.get('level').split(','),
+      status: searchParams.get('status') && searchParams.get('status').split(',')
+    }
+    filterForm.setFieldsValue(filterParam);
+
+    get(userRef).then((snapshot) => {
+      const userList = Object.values(snapshot.val()).reduce((result, { username, name }) => {
+        result[username] = name;
+        return result;
+      }, {});
+      setUser(userList)
+    }, { onlyOnce: true });
+
     getIssue();
   }
 

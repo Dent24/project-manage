@@ -34,7 +34,7 @@ const AddMember = () => {
       }
       setUrl(window.location.host + '/project-manage/#/register?username=' + value.username);
       setSpinning(false);
-    }, { onlyOnce: true })
+    })
   };
 
   const onFinishFailed = (errorInfo) => {

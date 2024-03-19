@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Typography, message, Spin } from 'antd';
 import { DragDropContext } from "react-beautiful-dnd";
 import _ from 'lodash'
@@ -29,7 +29,6 @@ const levelList = {
 
 const Kanban = () => {
   const [columns, setColumns] = useState(statusList);
-  const [onLoad, setOnLoad] = useState(true);
   const [user, setUser] = useState({});
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerData, setDrawerData] = useState({ level: 1, status: 'notStart' });
@@ -38,24 +37,27 @@ const Kanban = () => {
   const issueRef = ref(db, '/issues');
   const userRef = ref(db, '/users');
 
-  if (onLoad) {
-    setOnLoad(false);
-    const result = _.cloneDeep(statusList)
-    get(issueRef).then((snapshot) => {
-      Object.values(snapshot.val()).forEach((issue) => {
+  useEffect(() => {
+    const result = _.cloneDeep(statusList);
+
+    const getData = async () => {
+      const issueSnapShot = await get(issueRef);
+      const userSnapShot = await get(userRef);
+
+      Object.values(issueSnapShot.val()).forEach((issue) => {
         result[issue.status].list.push(issue);
       });
       setColumns(result);
-    });
 
-    get(userRef).then((snapshot) => {
-      const userList = Object.values(snapshot.val()).reduce((result, { username, name }) => {
+      const userList = Object.values(userSnapShot.val()).reduce((result, { username, name }) => {
         result[username] = name;
         return result;
       }, {});
-      setUser(userList)
-    }, { onlyOnce: true });
-  }
+      setUser(userList);
+    };
+
+    getData();
+  }, [])
 
   const onDragEnd = ({ source, destination }) => {
     if (destination === undefined || destination === null) return null

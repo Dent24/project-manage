@@ -1,21 +1,10 @@
 import { useState } from 'react';
 import { Card, Button, Form, Input, Spin, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, get } from "firebase/database";
+import { ref, get } from "firebase/database";
+import db from '../libs/dbLink'
 
 import loginCss from '../assets/scss/login.module.scss'
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAxLefC8OwMMzDoWthvaY7XylvpOLwUYGo",
-  authDomain: "project-manage-c1482.firebaseapp.com",
-  projectId: "project-manage-c1482",
-  storageBucket: "project-manage-c1482.appspot.com",
-  messagingSenderId: "444594290969",
-  appId: "1:444594290969:web:0f62cc116fc778173a4588"
-};
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
 
 const Login = () => {
   const [spinning, setSpinning] = useState(false);

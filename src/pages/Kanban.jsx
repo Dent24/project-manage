@@ -1,26 +1,15 @@
 import { useState } from 'react';
 import { Typography, message, Spin } from 'antd';
 import { DragDropContext } from "react-beautiful-dnd";
-import { initializeApp } from "firebase/app";
 import _ from 'lodash'
-import { getDatabase, ref, set, update, remove, get } from "firebase/database";
+import { ref, update, get } from "firebase/database";
+import db from '../libs/dbLink'
 import kanbanCss from '../assets/scss/kanban.module.scss'
 
 import IssueDrawer from '../compoments/list/IssueDrawer';
 import Column from '../compoments/kanban/Column'
 
 const { Title } = Typography;
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAxLefC8OwMMzDoWthvaY7XylvpOLwUYGo",
-  authDomain: "project-manage-c1482.firebaseapp.com",
-  projectId: "project-manage-c1482",
-  storageBucket: "project-manage-c1482.appspot.com",
-  messagingSenderId: "444594290969",
-  appId: "1:444594290969:web:0f62cc116fc778173a4588"
-};
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
 
 const statusList = {
   notStart: { id: 'notStart', text: '未開始', list: [] },

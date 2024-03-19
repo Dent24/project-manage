@@ -2,25 +2,14 @@ import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Typography, Table, Tag, Flex, Button, Modal, Form, message, Col, Row, Select, Spin } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, update, remove, get } from "firebase/database";
+import { ref, set, update, remove, get } from "firebase/database";
+import db from '../libs/dbLink'
 
 import IssuePop from '../compoments/list/IssuePop';
 import IssueDrawer from '../compoments/list/IssueDrawer';
 
 const { Title } = Typography;
 const { confirm } = Modal;
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAxLefC8OwMMzDoWthvaY7XylvpOLwUYGo",
-  authDomain: "project-manage-c1482.firebaseapp.com",
-  projectId: "project-manage-c1482",
-  storageBucket: "project-manage-c1482.appspot.com",
-  messagingSenderId: "444594290969",
-  appId: "1:444594290969:web:0f62cc116fc778173a4588"
-};
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
 
 const statusList = {
   notStart: { color: '#858585', text: '未開始' },

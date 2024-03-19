@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Col, Row, Card, Spin } from 'antd';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
 import { Doughnut, Bar } from 'react-chartjs-2';
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, get } from "firebase/database";
+import { ref, get } from "firebase/database";
+import db from '../libs/dbLink'
 import _ from 'lodash'
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
@@ -31,17 +31,6 @@ const horizonOption = {
   responsive: true,
   maintainAspectRatio: false
 }
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAxLefC8OwMMzDoWthvaY7XylvpOLwUYGo",
-  authDomain: "project-manage-c1482.firebaseapp.com",
-  projectId: "project-manage-c1482",
-  storageBucket: "project-manage-c1482.appspot.com",
-  messagingSenderId: "444594290969",
-  appId: "1:444594290969:web:0f62cc116fc778173a4588"
-};
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
 
 const Home = () => {
   const [allIssue, setAllIssue] = useState(_.cloneDeep(data));
@@ -75,8 +64,7 @@ const Home = () => {
 
     Promise.all([get(userRef), get(issueRef)])
       .then((values) => {
-        const nowUser = userInfo.username
-        console.log(nowUser)
+        const nowUser = userInfo.username;
         const userList = Object.values(values[0].val()).reduce((result, { username }) => {
           result[username] = {
             assign: 0,
